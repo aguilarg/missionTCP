@@ -13,7 +13,7 @@ clientBsocket.connect((serverName, port)) # connects the client and the server t
 
 while 1:
     data = clientBsocket.recv(1024) # recieve the bytes from the server
-    print("Router B: Message received from Router B.")
+    print("Router L: Message received from Router B.")
 
     # extract path from data
     data = data.decode()               # decode message because the data is coming as a bytes            

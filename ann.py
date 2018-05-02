@@ -15,12 +15,12 @@ def webserver(connectionSocket):
             #message = data[1]
 
             #print("path = ", path)
-            #print("message = ", message)
+            #print("message = ", messag
 
             #path = path + "/"
             #data = path + message
 
-            path = "8081 8082 8083/"
+            path = "8081 8082 8083 8084/"
             message = "Hi, lets find the enemy!"
             data = path + message
             

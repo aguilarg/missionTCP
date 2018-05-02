@@ -1,4 +1,4 @@
-from socket import *    # used for socket configurations 
+from socket import *   # used for socket configurations 
 import sys              # used to get arguments on command line
 import time             # used to find current time
 
@@ -41,7 +41,7 @@ clientSocket.connect((serverName, port)) # connects the client and the server to
 
 # now that we have the client and the server connected, we can then send and receive messages
 while 1:
-    data = clientSocket.recv(1024) # recieve the bytes from the server
+    data = clientSocket.recv(2048) # recieve the bytes from the server
     print("Router A: Message received from Ann.")
 
     # extract path from data

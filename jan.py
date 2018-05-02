@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Apr 30 16:27:30 2018
+
+@author: gracielaaguilar
+"""
+
 # import modules
 from socket import *   # used for socket configurations 
 import sys             # used to get arguments on command line 
@@ -20,13 +28,13 @@ def webserver(connectionSocket):
             #path = path + "/"
             #data = path + message
 
-            path = "8081 8082 8083/"
-            message = "Hi, lets find the enemy!"
+            path = "8083 8082 8081/"
+            message = "Hi, i got your message!"
             data = path + message
             
             # Send the content of the requested file to the client
             connectionSocket.send(data.encode())
-            print("Message sent from Ann.")
+            print("Message sent from Jan.")
             time.sleep(2)
             #connectionSocket.close() # close client socket
             return 1
@@ -36,21 +44,22 @@ def webserver(connectionSocket):
             # Close client socket
             connectionSocket.close()    
             return 0
+        
     
-annToChan = []
-annToJan = []
+janToAnn = []
+janToChan = []
 
-fp = open('Ann-_Chan.txt') 
-annToChan = fp.read().split("\n") 
+fp = open('Jan-_Ann.txt') 
+janToAnn = fp.read().split("\n") 
 fp.close() 
-fp = open('Ann-_Jan.txt') 
-annToJan = fp.read().split("\n") 
+fp = open('Jan-_Chan.txt') 
+janToChan = fp.read().split("\n") 
 fp.close() 
 
 
 
 # Prepare a sever socket
-serverPort = 8080
+serverPort = 8083
 serverName = "localhost"
 serverSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
 
@@ -61,7 +70,7 @@ serverSocket.listen(5)
 
 while 1:
     # Establish the connection
-    print ("Ann: Ready to serve on port " + str(serverPort) + "...")
+    print ("Jan: Ready to serve on port " + str(serverPort) + "...")
     connectionSocket, addr = serverSocket.accept()
     print("")
     #serverSocket.settimeout(120) # system will timeout after 120 seconds

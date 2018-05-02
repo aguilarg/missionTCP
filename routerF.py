@@ -1,9 +1,17 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue May  1 12:19:14 2018
+
+@author: gracielaaguilar
+"""
+
 from socket import *    # used for socket configurations 
 import sys              # used to get arguments on command line
 import time             # used to find current time
 
 
-port = 8081          
+port = 8083        
 serverName = "localhost"
 
 clientBsocket = socket(AF_INET, SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
@@ -13,7 +21,7 @@ clientBsocket.connect((serverName, port)) # connects the client and the server t
 
 while 1:
     data = clientBsocket.recv(1024) # recieve the bytes from the server
-    print("Router B: Message received from Router A.")
+    print("Router B: Message received from Router B.")
 
     # extract path from data
     data = data.decode()               # decode message because the data is coming as a bytes            
@@ -45,7 +53,7 @@ while 1:
 
     #establish connection
     connectionSocket, addr = serverSocket.accept()
-    print("message sent on port", port, "from Router B")
+    print("message sent on port", port, "from Router L")
     connectionSocket.send(data.encode())
     time.sleep(2)
 

@@ -2,6 +2,36 @@ from socket import *    # used for socket configurations
 import sys              # used to get arguments on command line
 import time             # used to find current time
 
+import numpy as np
+import networkx as nx
+
+graph = np.array([[0,4,3,0,7,0,0,0],[4,0,6,0,0,0,0,5], [3,6,0,11,0,0,0,0],
+          [0,0,11,0,0,6,10,9], [7,0,0,0,0,0,5,0], [0,0,0,6,0,0,0,5],
+          [0,0,0,10,5,0,0,0],[0,5,0,9,0,5,0,0]])
+
+def dijAlg(route, node):
+    
+    print("for Router",route[node], ":")
+    
+    G = nx.from_numpy_matrix(graph, create_using=nx.DiGraph())
+    print("Destination      Distance       Shortest Path")
+    for i in range(8):
+        counter = 0
+        result = []
+        path = nx.dijkstra_path(G, node, i)
+        
+        for j in range (0, len(path)):
+            num = path[j]
+            counter += graph[num][node]
+            result.append(route[num])    
+        print(route[i],"               ", counter, "             ", result)
+        
+routers = ['A','B','C','D','E','F','G','L']
+
+G = nx.from_numpy_matrix(graph, create_using=nx.DiGraph())
+
+dijAlg (routers, 0)
+
 
 port = 8080          
 serverName = "localhost"

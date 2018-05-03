@@ -4,34 +4,39 @@ import time             # used to find current time
 
 import numpy as np
 import networkx as nx
+import numpy as np
 
 graph = np.array([[0,4,3,0,7,0,0,0],[4,0,6,0,0,0,0,5], [3,6,0,11,0,0,0,0],
           [0,0,11,0,0,6,10,9], [7,0,0,0,0,0,5,0], [0,0,0,6,0,0,0,5],
           [0,0,0,10,5,0,0,0],[0,5,0,9,0,5,0,0]])
 
+
+G = nx.from_numpy_matrix(graph, create_using=nx.DiGraph())
 def dijAlg(route, node):
     
     print("for Router",route[node], ":")
     
-    G = nx.from_numpy_matrix(graph, create_using=nx.DiGraph())
+    
     print("Destination      Distance       Shortest Path")
     for i in range(8):
-        counter = 0
+        
         result = []
         path = nx.dijkstra_path(G, node, i)
-        
+        ix =[[path[i],path[i+1]] for i in range(len(path)-1)]
+        total = sum([graph[i[0]][i[1]] for i in ix])
         for j in range (0, len(path)):
             num = path[j]
-            counter += graph[num][node]
+            
+            #print(counter)
             result.append(route[num])    
-        print(route[i],"               ", counter, "             ", result)
-        
+        print(route[i],"               ", total, "             ", result)
+        total = 0
+       
 routers = ['A','B','C','D','E','F','G','L']
-
-G = nx.from_numpy_matrix(graph, create_using=nx.DiGraph())
 
 dijAlg (routers, 0)
 
+RECIEVING = True
 
 port = 8080          
 serverName = "localhost"
@@ -40,7 +45,7 @@ clientSocket = socket(AF_INET, SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP
 clientSocket.connect((serverName, port)) # connects the client and the server together
 
 # now that we have the client and the server connected, we can then send and receive messages
-while 1:
+while RECIEVING:
     data = clientSocket.recv(2048) # recieve the bytes from the server
     print("Router A: Message received from Ann.")
 
@@ -55,6 +60,7 @@ while 1:
 
     nextPath = path.split()
     port = int(nextPath[0])
+    print(port)
 
     # fix path; pop from list
     newPath = ""
@@ -77,7 +83,9 @@ while 1:
     print("message sent on port", port, "from Router A")
     connectionSocket.send(data.encode())
     time.sleep(2)
-
+while RECIEVING == False:
+    print("do nothing")
+    break;
 #clientSocket.close()  # close the socket since we are done using it
 
 

@@ -11,23 +11,26 @@ import numpy as np
 graph = np.array([[0,4,3,0,7,0,0,0],[4,0,6,0,0,0,0,5], [3,6,0,11,0,0,0,0],
           [0,0,11,0,0,6,10,9], [7,0,0,0,0,0,5,0], [0,0,0,6,0,0,0,5],
           [0,0,0,10,5,0,0,0],[0,5,0,9,0,5,0,0]])
-
+G = nx.from_numpy_matrix(graph, create_using=nx.DiGraph())
 def dijAlg(route, node):
     
     print("for Router",route[node], ":")
     
-    G = nx.from_numpy_matrix(graph, create_using=nx.DiGraph())
+    
     print("Destination      Distance       Shortest Path")
     for i in range(8):
-        counter = 0
+        
         result = []
         path = nx.dijkstra_path(G, node, i)
-        
+        ix =[[path[i],path[i+1]] for i in range(len(path)-1)]
+        total = sum([graph[i[0]][i[1]] for i in ix])
         for j in range (0, len(path)):
             num = path[j]
-            counter += graph[num][node]
+            
+            #print(counter)
             result.append(route[num])    
-        print(route[i],"               ", counter, "             ", result)
+        print(route[i],"               ", total, "             ", result)
+        total = 0
  
     
 annToChan = []
@@ -63,7 +66,7 @@ fp.close()
 
 routers = ['A','B','C','D','E','F','G','L']
 
-G = nx.from_numpy_matrix(graph, create_using=nx.DiGraph())
+#G = nx.from_numpy_matrix(graph, create_using=nx.DiGraph())
 
 dijAlg (routers, 0)
 dijAlg (routers, 1)

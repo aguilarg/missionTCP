@@ -20,7 +20,7 @@ def webserver(connectionSocket):
             #path = path + "/"
             #data = path + message
 
-            path = "8081 8082 8083 8084/"
+            path = "8081 8082 8083/"
             message = "Hi, lets find the enemy!"
             data = path + message
             

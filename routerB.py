@@ -74,7 +74,7 @@ while 1:
     serverSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
     serverSocket.bind((serverName, port))  # bind the socket to the local address
     serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-    serverSocket.listen(5)
+    serverSocket.listen(5)   # listening for a connection
 
     #establish connection
     connectionSocket, addr = serverSocket.accept()

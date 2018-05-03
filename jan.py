@@ -49,24 +49,34 @@ fp = open('Ann-_Jan.txt')
 annToJan = fp.read().split("\n") 
 fp.close() 
 
-
-
-# Prepare a sever socket
-serverPort = 8085
+# connect to port with incomming messages 
+port = 8085             # this router, F, gets connected to port 8084 as a client        
 serverName = "localhost"
-serverSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
 
-serverSocket.bind((serverName, serverPort))  # bind the socket to the local address
-serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-# specify the number of unaccepted connections that the system will allow before refusing new connections
-serverSocket.listen(5)
+clientSocket = socket(AF_INET, SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
+clientSocket.connect((serverName, port)) # connects the client and the server together
+print("sucessfully connected. Ready to send message on port " + str(port) + "...")
+
 
 while 1:
-    # Establish the connection
-    print ("Jan: Ready to serve on port " + str(serverPort) + "...")
-    connectionSocket, addr = serverSocket.accept()
-    print("accept")
+    data = clientSocket.recv(1024) # recieve the bytes from the server
+    print("Jan: Message received from Router F.")
 
-    #serverSocket.settimeout(120) # system will timeout after 120 seconds
-    webserver(connectionSocket)
-serverSocket.close() # close server socket
+    # extract path from data
+    data = data.decode()               # decode message because the data is coming as a bytes            
+    data = data.split('/')
+    path = data[0]
+    message = data[1]
+    
+    print("path = ", path)
+    print("message = ", message)
+
+    path = "8085 8083 8082 8081/"
+    message = "Got your message buddy!"
+    data = path + message
+
+    # Send the content of the requested file to the client
+    clientSocket.send(data.encode())
+    print("Message sent from Jan.")
+    time.sleep(2)
+#clientSocket.close()  # close the socket since we are done using it

@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri May  4 13:40:09 2018
+
+@author: gracielaaguilar
+"""
+
 # import modules
 from socket import *   # used for socket configurations 
 import sys             # used to get arguments on command line 
@@ -52,7 +60,7 @@ while True:
 
     # Send data with message and path
     clientSocket.send(data.encode())
-    print("Jan:", message)
+    print("chan:", message)
     print("Message sent.")
     time.sleep(1)
 

@@ -36,40 +36,38 @@ serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 serverSocket.listen(5)
 
 print("Communication setup successfully.")
+connectionSocket, addr = serverSocket.accept()   
 
-while 1:
-    while True:
-        try:
-            print ("Ann: Ready to serve on port " + str(serverPort) + "...\n")  
-            connectionSocket, addr = serverSocket.accept()         
+i = 0
+while i < len(annToChan):
+    try:
+        print ("Ann: Ready to serve on port " + str(serverPort) + "...\n")  
+                  
             
-            path = "8081 8082 8083 8085/"
-            message = "Hi, lets find the enemy!"
-            data = path + message
+        path = "8081 8082 8083 8085/"
+        message = annToChan[i]
+        data = path + message
             
             # Send data with message and path
-            connectionSocket.send(data.encode())
-            print("Ann:", message)
-            print("Message sent.")
+        connectionSocket.send(data.encode())
+        print("Ann:", message)
+        print("Message sent.")
             
             # receive message from sender
-            receivedData =  connectionSocket.recv(1024)
-            path, message = getPathAndMessage(receivedData)
-            time.sleep(1)   # wait 1 second the print message
-            print("\nMessage received.")
-            print("Jan:", message)
-            print("____________________________________")
-            print("\nDebugging Details (received data):")
-            print("path = ", path)
-            print("message = ", message,"\n")
-            print("____________________________________")
+        receivedData =  connectionSocket.recv(1024)
+        path, message = getPathAndMessage(receivedData)
+        time.sleep(1)   # wait 1 second the print message
+        print("\nMessage received.")
+        print("Jan:", message)
+          
             
 
-        except IOError:
-            # Send response message for file not found
-            connectionSocket.send(b"Error found")  
-            # Close client socket
-            connectionSocket.close()    
+    except IOError:
+        # Send response message for file not found
+        connectionSocket.send(b"Error found")  
+        # Close client socket
+        connectionSocket.close()  
+    i+=1
 
-serverSocket.close() # close server socket
+
 

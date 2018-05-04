@@ -45,8 +45,10 @@ connectionSocket, addr = serverSocket.accept()
 
 while True:
     try:
+        chan = False
         chan = input("Press 0 for Jan or 1 for Chan: ")
-        chan = int(chan)
+        if (chan == '1'):
+            chan = True
         if(chan):
             path = "8086 8087/"   
         else:

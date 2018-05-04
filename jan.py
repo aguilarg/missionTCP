@@ -57,26 +57,35 @@ clientSocket = socket(AF_INET, SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP
 clientSocket.connect((serverName, port)) # connects the client and the server together
 print("sucessfully connected. Ready to send message on port " + str(port) + "...")
 
-
-while 1:
-    data = clientSocket.recv(1024) # recieve the bytes from the server
-    print("Jan: Message received from Router F.")
-
+def getPathAndMessage(data):
     # extract path from data
     data = data.decode()               # decode message because the data is coming as a bytes            
     data = data.split('/')
     path = data[0]
     message = data[1]
     
-    print("path = ", path)
-    print("message = ", message)
+    return (path, message)
 
-    path = "8085 8083 8082 8081/"
+while 1:
+    # receive message from sender
+    data = clientSocket.recv(1024) 
+    path, message = getPathAndMessage(data)
+    time.sleep(1)   # wait 1 second the print message
+    print("\nMessage received.")
+    print("Ann:", message)
+    print("____________________________________")
+    print("\nDebugging Details (received data):")
+    print("path = ", path)
+    print("message = ", message,"\n")
+    print("____________________________________")
+
+    path = "8083 8082 8081 8080/"
     message = "Got your message buddy!"
     data = path + message
 
-    # Send the content of the requested file to the client
+    # Send data with message and path
     clientSocket.send(data.encode())
-    print("Message sent from Jan.")
-    time.sleep(2)
+    print("Jan:", message)
+    print("Message sent.")
+    time.sleep(1)
 #clientSocket.close()  # close the socket since we are done using it

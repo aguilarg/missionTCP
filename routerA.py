@@ -36,31 +36,23 @@ routers = ['A','B','C','D','E','F','G','L']
 
 dijAlg (routers, 0)
 
-RECIEVING = True
-
-port = 8080          
+port = 8080                      
 serverName = "localhost"
+clientSocket = socket(AF_INET, SOCK_STREAM)     # AF_INET = IPv4, SOCK_STREAM = TCP socket
+clientSocket.connect((serverName, port))        # connects the client and the server together
 
-clientSocket = socket(AF_INET, SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
-clientSocket.connect((serverName, port)) # connects the client and the server together
-
-# now that we have the client and the server connected, we can then send and receive messages
-while RECIEVING:
-    data = clientSocket.recv(2048) # recieve the bytes from the server
-    print("Router A: Message received from Ann.")
-
-    # extract path from data
+# extract path from data
+def getPathAndMessage(data):
     data = data.decode()               # decode message because the data is coming as a bytes            
     data = data.split('/')
     path = data[0]
     message = data[1]
-    
-    print("path = ", path)
-    print("message = ", message)
+    return (path, message)
 
+# find the next path to send message
+def getNextData(path, message):
     nextPath = path.split()
     port = int(nextPath[0])
-    print(port)
 
     # fix path; pop from list
     newPath = ""
@@ -68,25 +60,45 @@ while RECIEVING:
     while i < len(nextPath):
         newPath = newPath + " " + nextPath[i]
         i += 1
-
     path = newPath + "/"
     data = path + message
 
-    #prepare server socket
-    serverSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
-    serverSocket.bind((serverName, port))  # bind the socket to the local address
-    serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-    serverSocket.listen(5)
+    return data, port
 
-    #establish connection
-    connectionSocket, addr = serverSocket.accept()
+# send and receive data
+connectedFlag = False       # use to check is server is already in use
+while 1:
+    data = clientSocket.recv(1024)      # recieve message from sender
+    print("Router A: Message received from Ann.")
+
+    path, message = getPathAndMessage(data)
+    print("path = ", path)
+    print("message = ", message)
+
+    data, port = getNextData(path, message)       # get next path for which the message should go
+
+    if (connectedFlag != True):
+        #prepare server socket
+        serverSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
+        serverSocket.bind((serverName, port))  # bind the socket to the local address
+        serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        serverSocket.listen(5)
+        connectionSocket, addr = serverSocket.accept()
+        connectedFlag = True
+
+    # send data to next client/server
     print("message sent on port", port, "from Router A")
     connectionSocket.send(data.encode())
     time.sleep(2)
-while RECIEVING == False:
-    print("do nothing")
-    break;
-#clientSocket.close()  # close the socket since we are done using it
 
+    # recieve data and send it to next port
+    data = connectionSocket.recv(1024)      # new incoming message (server end)
+    path, message = getPathAndMessage(data) # send data for processing to get path and message
+    print("path = ", path)
+    print("message = ", message)  
 
-
+    # since we got the data using the server, we send it using the client
+    data, port = getNextData(path, message)       # get next path for which the message should go
+    print("message sent on port", port, "from Router A") 
+    clientSocket.send(data.encode())
+    time.sleep(2)

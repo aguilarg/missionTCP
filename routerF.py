@@ -43,12 +43,11 @@ routers = ['A','B','C','D','E','F','G','L']
 dijAlg (routers, 5)
 
 
-
 port = 8083             # this router, F, gets connected to port 8083 as a client        
 serverName = "localhost"
 
-clientBsocket = socket(AF_INET, SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
-clientBsocket.connect((serverName, port)) # connects the client and the server together
+clientSocket = socket(AF_INET, SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
+clientSocket.connect((serverName, port)) # connects the client and the server together
 
 
 def getPathAndMessage(data):
@@ -75,10 +74,10 @@ def getNextData(path, message):
 
     return data, port
 
-# now that we have the client and the server connected, we can then send and receive messages
-
+# send and receive data
+connectedFlag = False       # use to check is server is already in use
 while 1:
-    data = clientBsocket.recv(1024) # recieve the bytes from the server
+    data = clientSocket.recv(1024) # recieve the bytes from the server
     print("Router L: Message received from Router L.")
 
     path, message = getPathAndMessage(data)
@@ -87,12 +86,14 @@ while 1:
 
     data, port = getNextData(path, message)       # get next path for which the message should go
 
-    #prepare server socket
-    serverSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
-    serverSocket.bind((serverName, port))  # bind the socket to the local address
-    serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-    serverSocket.listen(5)
-    connectionSocket, addr = serverSocket.accept()
+    if (connectedFlag != True):
+        #prepare server socket
+        serverSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
+        serverSocket.bind((serverName, port))  # bind the socket to the local address
+        serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        serverSocket.listen(5)
+        connectionSocket, addr = serverSocket.accept()
+        connectedFlag = True
 
     # send data to next client/server
     print("message sent on port", port, "from Router F")
@@ -100,15 +101,17 @@ while 1:
     time.sleep(2)
 
     # recieve data and send it to next port
-    data = connectionSocket.recv(1024)      # new incoming message
+    data = connectionSocket.recv(1024)      # new incoming message (server end)
     path, message = getPathAndMessage(data) # send data for processing to get path and message
     print("path = ", path)
     print("message = ", message)  
 
-    data, nextPort = getNextData(path, message)       # get next path for which the message should go
-    print("message sent on port", port, "from Router F")
-    connectionSocket.send(data.encode())
+    # since we got the data using the server, we send it using the client
+    data, port = getNextData(path, message)       # get next path for which the message should go
+    print("message sent on port", port, "from Router F")    
+    clientSocket.send(data.encode())
     time.sleep(2)
+
     
 
 #clientSocket.close()  # close the socket since we are done using it

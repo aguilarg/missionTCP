@@ -37,18 +37,18 @@ serverSocket.listen(5)
 
 print("Communication setup successfully.")
 connectionSocket, addr = serverSocket.accept()   
-
+print ("Ann: Ready to serve on port " + str(serverPort) + "...\n")  
 
 while True:
     try:
-        print ("Ann: Ready to serve on port " + str(serverPort) + "...\n")  
+        
                   
             
         path = "8081 8082 8083 8085/"
         
-        var = input("Please enter something: ")
-        #print("You entered " + str(var))
-        #message = annToJan[0]
+        
+        
+        message = annToJan[0]
         
         data = path + str(var)
             

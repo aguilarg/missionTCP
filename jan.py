@@ -29,9 +29,9 @@ def getPathAndMessage(data):
     message = data[1]
     
     return (path, message)
-i = 0
-print(len(janToAnn))
-while i < len(janToAnn):
+
+
+while True:
     # receive message from sender
     data = clientSocket.recv(1024) 
     path, message = getPathAndMessage(data)
@@ -48,13 +48,14 @@ while i < len(janToAnn):
     """
 
     path = "8083 8082 8081 8080/"
-    message = janToAnn[i]
+    var = input("Jan's message: ")
+        #print("You entered " + str(var))
+    message = str(var)
     data = path + message
-
     # Send data with message and path
     clientSocket.send(data.encode())
     print("Jan:", message)
     print("Message sent.")
     time.sleep(1)
-    i +=1
+
 #clientSocket.close()  # close the socket since we are done using it

@@ -14,15 +14,14 @@ import time
 janToAnn = []
 janToChan = []
 
-fp = open('Jan-_Ann.txt') 
-janToAnn = fp.read().split("\n") 
+fp = open('Chan-_Ann.txt') 
+chanToAnn = fp.read().split("\n") 
 fp.close() 
-fp = open('Jan-_Chan.txt') 
-janToChan = fp.read().split("\n") 
+fp = open('Chan-_Jan.txt') 
+chanToJan = fp.read().split("\n") 
 fp.close() 
 
-# connect to port with incomming messages 
-port = 8085             # this router, F, gets connected to port 8084 as a client        
+port = 8087             # this router, F, gets connected to port 8084 as a client        
 serverName = "localhost"
 
 clientSocket = socket(AF_INET, SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
@@ -37,6 +36,7 @@ def getPathAndMessage(data):
     message = data[1]
     
     return (path, message)
+
 
 while True:
     # receive message from sender
@@ -54,13 +54,14 @@ while True:
     print("____________________________________")
     """
 
-    path = "8083 8082 8081 8080/"
-    message = janToAnn[7]
+    path = "8086 8081 8080/"
+    var = input("Chan's message: ")
+        #print("You entered " + str(var))
+    message = str(var)
     data = path + message
-
     # Send data with message and path
     clientSocket.send(data.encode())
-    print("chan:", message)
+    print("Jan:", message)
     print("Message sent.")
     time.sleep(1)
 

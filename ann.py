@@ -42,12 +42,18 @@ serverSocket.listen(5)
 print("Communication setup successfully.")
 print ("Ann: Ready to serve on port " + str(serverPort) + "...\n")  
 connectionSocket, addr = serverSocket.accept()   
-print(len(annToJan))
-i = 0
-while i < len(annToJan):
-    try:  
-        path = "8081 8082 8083 8085/"
-        var = input("Please enter something: ")
+
+while True:
+    try:
+        chan = input("Press 0 for Jan or 1 for Chan: ")
+        chan = int(chan)
+        if(chan):
+            path = "8086 8087/"   
+        else:
+            path = "8081 8082 8083 8085/"
+            
+        
+        var = input("Ann's message: ")
         #print("You entered " + str(var))
         message = str(var)
         data = path + message
@@ -71,6 +77,4 @@ while i < len(annToJan):
         connectionSocket.send(b"Error found")  
         # Close client socket
         connectionSocket.close()  
-
-    i +=1
 

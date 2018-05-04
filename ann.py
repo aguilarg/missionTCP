@@ -15,9 +15,13 @@ def getPathAndMessage(data):
 
 
     
-annToChan = []
+annToChan = [] 
+
+
 annToJan = []
 
+for i in range(9):
+    annToJan.append("g")
 fp = open('Ann-_Chan.txt') 
 annToChan = fp.read().split("\n") 
 fp.close() 
@@ -36,21 +40,17 @@ serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 serverSocket.listen(5)
 
 print("Communication setup successfully.")
-connectionSocket, addr = serverSocket.accept()   
 print ("Ann: Ready to serve on port " + str(serverPort) + "...\n")  
+connectionSocket, addr = serverSocket.accept()   
+print(len(annToJan))
 i = 0
 while i < len(annToJan):
-    try:
-        
-                  
-            
+    try:  
         path = "8081 8082 8083 8085/"
-        
-        
-        
-        message = annToJan[0]
-        
-        data = path + annToJan[i]
+        var = input("Please enter something: ")
+        #print("You entered " + str(var))
+        message = str(var)
+        data = path + message
             
             # Send data with message and path
         connectionSocket.send(data.encode())

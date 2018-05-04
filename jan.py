@@ -30,6 +30,7 @@ def getPathAndMessage(data):
     
     return (path, message)
 i = 0
+print(len(janToAnn))
 while i < len(janToAnn):
     # receive message from sender
     data = clientSocket.recv(1024) 

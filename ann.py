@@ -38,8 +38,8 @@ serverSocket.listen(5)
 print("Communication setup successfully.")
 connectionSocket, addr = serverSocket.accept()   
 print ("Ann: Ready to serve on port " + str(serverPort) + "...\n")  
-
-while True:
+i = 0
+while i < len(annToJan):
     try:
         
                   
@@ -50,7 +50,7 @@ while True:
         
         message = annToJan[0]
         
-        data = path + str(var)
+        data = path + annToJan[i]
             
             # Send data with message and path
         connectionSocket.send(data.encode())
@@ -72,5 +72,5 @@ while True:
         # Close client socket
         connectionSocket.close()  
 
-
+    i +=1
 

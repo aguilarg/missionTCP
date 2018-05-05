@@ -30,7 +30,9 @@ def getPathAndMessage(data):
     
     return (path, message)
 
-
+connectedFlag = False       # use to check is server is already in use
+done = False
+first_time = True
 while True:
     # receive message from sender
     data = clientSocket.recv(1024) 
@@ -39,18 +41,61 @@ while True:
     print("\nMessage received.")
     print("Ann:", message)
     print("")
-    """
-    print("____________________________________")
-    print("\nDebugging Details (received data):")
-    print("path = ", path)
-    print("message = ", message,"\n")
-    print("____________________________________")
-    """
+    
+    
+    if(message == "execute"):
+        # connect to airforceH
+        if (connectedFlag != True):
+            #prepare server socket
+            serverSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
+            serverSocket.bind((serverName, 8088))  # bind the socket to the local address
+            serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+            serverSocket.listen(5)
+            connectionSocket, addr = serverSocket.accept()
+            connectedFlag = True
+
+        while(connectedFlag):
+            if (message == "mission successful"):
+                close = "close"
+                
+                connectionSocket.send(close.encode())
+                message = "mission has been accomplished!!!!"
+                done = True
+                break
+
+            if(first_time):
+                # send data to next client/server
+                print("message sent on port", port, "from Jan")
+                #message = message.decode()
+                connectionSocket.send(message.encode())
+                print("Jan:", message)
+                print("Message sent.")
+                first_time = False
+
+            message = connectionSocket.recv(1024)      # new incoming message (server end)
+            message = message.decode()
+            print("\nMessage received.")
+            print("AirforceH:", message)
+            print("")
+
+            var = input("Jan's message: ")
+            message = str(var)
+            #message = message.decode()
+            connectionSocket.send(message.encode())
+            print("Jan:", message)
+            print("Message sent.")
+
+
+            # recieve data and send it to next port
+            
 
     path = "8083 8082 8081 8080/"
-    var = input("Jan's message: ")
-        #print("You entered " + str(var))
-    message = str(var)
+
+    if(done != True):
+        var = input("Jan's message: ")
+        message = str(var)
+     
+
     data = path + message
     # Send data with message and path
     clientSocket.send(data.encode())

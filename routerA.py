@@ -110,7 +110,7 @@ while 1:
 
     if (connectedFlagAnn != True and port == 8086):
         #prepare server socket
-        print("In Ann connection")
+        #print("In Jan connection")
         chanServerSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
         chanServerSocket.bind((serverName, port))  # bind the socket to the local address
         chanServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)

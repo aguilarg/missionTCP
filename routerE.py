@@ -95,7 +95,7 @@ while 1:
         connectedFlag = True
 
     # send data to next client/server
-    print("message sent on port", port, "from Router F")
+    print("message sent on port", port, "from Router E")
     connectionSocket.send(data.encode())
     time.sleep(2)
 
@@ -107,7 +107,7 @@ while 1:
 
     # since we got the data using the server, we send it using the client
     data, port = getNextData(path, message)       # get next path for which the message should go
-    print("message sent on port", port, "from Router F")    
+    print("message sent on port", port, "from Router E")    
     clientSocket.send(data.encode())
     time.sleep(2)
 

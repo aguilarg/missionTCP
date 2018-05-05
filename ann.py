@@ -45,22 +45,23 @@ connectionSocket, addr = serverSocket.accept()
 
 while True:
     try:
-        chan = False
-        chan = input("Press 0 for Jan or 1 for Chan: ")
-        if (chan == '1'):
-            chan = True
-        if(chan):
+        choice = input("Press 0 for Jan or 1 for Chan: ")
+        choice = int(choice)
+        # go to the path for chan
+        if(choice):
             path = "8086 8087/"   
+        # go to Jan path 
         else:
             path = "8081 8082 8083 8085/"
             
+        print("path = ", path)
         
         var = input("Ann's message: ")
         #print("You entered " + str(var))
         message = str(var)
         data = path + message
             
-            # Send data with message and path
+        # Send data with message and path
         connectionSocket.send(data.encode())
         print("Ann:", message)
         print("Message sent.")

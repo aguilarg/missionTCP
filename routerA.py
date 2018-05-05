@@ -65,27 +65,8 @@ def getNextData(path, message):
 
     return data, port
 
-# send and receive data
-connectedFlag = False       # use to check is server is already in use
-while 1:
-    data = clientSocket.recv(1024)      # recieve message from sender
-    print("Router A: Message received from Ann.")
-
-    path, message = getPathAndMessage(data)
-    print("path = ", path)
-    print("message = ", message)
-
-    data, port = getNextData(path, message)       # get next path for which the message should go
-
-    if (connectedFlag != True):
-        #prepare server socket
-        serverSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
-        serverSocket.bind((serverName, port))  # bind the socket to the local address
-        serverSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        serverSocket.listen(5)
-        connectionSocket, addr = serverSocket.accept()
-        connectedFlag = True
-
+# sends and receive data
+def sendRecv(connectionSocket, data, port):
     # send data to next client/server
     print("message sent on port", port, "from Router A")
     connectionSocket.send(data.encode())
@@ -102,3 +83,45 @@ while 1:
     print("message sent on port", port, "from Router A") 
     clientSocket.send(data.encode())
     time.sleep(2)
+
+# send and receive data
+connectedFlagAnn = False       # use to check is server is already in use
+connectedFlagJan = False       # use to check is server is already in use
+while 1:
+    data = clientSocket.recv(1024)      # recieve message from sender
+    print("Router A: Message received from Ann.")
+
+    path, message = getPathAndMessage(data)
+    print("path = ", path)
+    print("message = ", message)
+
+    data, port = getNextData(path, message)       # get next path for which the message should go
+
+
+    if (connectedFlagJan != True and port == 8081):
+        #prepare server socket
+        print("In Jan connection")
+        janServerSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
+        janServerSocket.bind((serverName, port))  # bind the socket to the local address
+        janServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        janServerSocket.listen(5)
+        janConnectionSocket, addr = janServerSocket.accept()
+        connectedFlagJan = True
+
+    if (connectedFlagAnn != True and port == 8086):
+        #prepare server socket
+        print("In Ann connection")
+        chanServerSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
+        chanServerSocket.bind((serverName, port))  # bind the socket to the local address
+        chanServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        chanServerSocket.listen(5)
+        chanConnectionSocket, addr = chanServerSocket.accept()
+        connectedFlagAnn = True
+
+    # send message to Jan
+    if(port == 8081):
+        sendRecv(janConnectionSocket, data, port)
+
+    # send message to Chan
+    if(port == 8086):
+        sendRecv(chanConnectionSocket, data, port) 

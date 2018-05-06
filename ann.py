@@ -2,11 +2,12 @@
 from socket import *   # used for socket configurations 
 import sys             # used to get arguments on command line 
 import time
+import pickle
 
 
 def getPathAndMessage(data):
     # extract path from data
-    data = data.decode()               # decode message because the data is coming as a bytes            
+    #data = data.decode()               # decode message because the data is coming as a bytes            
     data = data.split('/')
     path = data[0]
     message = data[1]
@@ -43,38 +44,62 @@ print("Communication setup successfully.")
 print ("Ann: Ready to serve on port " + str(serverPort) + "...\n")  
 connectionSocket, addr = serverSocket.accept()   
 
+janID = 100
+chanID = 1
+annID = 111
+destination = [annID, janID, chanID]
+source = [annID, janID, chanID]
+
+DRP = 0
+TER = 0
+URG = 0
+ACK = 0
+RST = 0
+SYN = 0
+FIN = 0
+flags = [DRP, TER, URG, ACK, RST, SYN, FIN]
+
 while True:
     try:
         choice = input("Press 0 for Jan or 1 for Chan: ")
         choice = int(choice)
+
+        var = input("Ann's message: ")
+        message = str(var)
+        
         # go to the path for chan
         if(choice):
             path = "8086 8087/"   
+            pathMessage = path + message
+            sendDataList = [source[0], destination[1], pathMessage, flags]
         # go to Jan path 
         else:
             path = "8081 8082 8083 8085/"
-            
-        print("path = ", path)
+            pathMessage = path + message
+            destination[1] = janID
+            sendDataList = [source[0], destination[0], pathMessage, flags]
         
-        var = input("Ann's message: ")
-        #print("You entered " + str(var))
-        message = str(var)
-        data = path + message
-            
-        # Send data with message and path
-        connectionSocket.send(data.encode())
+        print("path = ", path)
+                  
+        #**************************************************
+        # data to be sent
+        sendData = pickle.dumps(sendDataList)      # convert rawData in string format and store into data
+        connectionSocket.send(sendData)
         print("Ann:", message)
         print("Message sent.")
-            
-            # receive message from sender
-        receivedData =  connectionSocket.recv(1024)
-        path, message = getPathAndMessage(receivedData)
-        time.sleep(1)   # wait 1 second the print message
+        #**************************************************
+
+
+        #**************************************************
+        # receive message from sender
+        receivedData =  connectionSocket.recv(1024) # recieve message from sender
+        receivedDataList = pickle.loads(receivedData)  # convert data in list format: [destination[0], pathMessage, flags]
+        path, message = getPathAndMessage(receivedDataList[2]) # sends data for processing
+        time.sleep(1)
         print("\nMessage received.")
         print("Jan:", message)
-          
-            
-
+        #*************************************************
+        
     except IOError:
         # Send response message for file not found
         connectionSocket.send(b"Error found")  

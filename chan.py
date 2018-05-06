@@ -10,7 +10,8 @@ Created on Fri May  4 13:40:09 2018
 from socket import *   # used for socket configurations 
 import sys             # used to get arguments on command line 
 import time
-    
+import pickle
+
 janToAnn = []
 janToChan = []
 
@@ -30,39 +31,46 @@ print("sucessfully connected. Ready to send message on port " + str(port) + "...
 
 def getPathAndMessage(data):
     # extract path from data
-    data = data.decode()               # decode message because the data is coming as a bytes            
+    #data = data.decode()               # decode message because the data is coming as a bytes            
     data = data.split('/')
     path = data[0]
     message = data[1]
     
     return (path, message)
 
+annID = 111
+janID = 100
+chanID = 1
 
 while True:
     # receive message from sender
-    data = clientSocket.recv(1024) 
-    path, message = getPathAndMessage(data)
-    time.sleep(1)   # wait 1 second the print message
+    #**************************************************
+    receivedData = clientSocket.recv(1024) # recieve message from sender
+    receivedDataList = pickle.loads(receivedData)  # convert data in list format: [destination[0], pathMessage, flags]
+    path, message = getPathAndMessage(receivedDataList[2]) # sends data for processing
+    time.sleep(1)
     print("\nMessage received.")
     print("Ann:", message)
     print("")
-    """
-    print("____________________________________")
-    print("\nDebugging Details (received data):")
-    print("path = ", path)
-    print("message = ", message,"\n")
-    print("____________________________________")
-    """
+    #displayDataFlags(receivedDataList[2])
+    #*************************************************
+    
+    receivedDataList[0] = chanID   # set source agentID
 
-    path = "8086 8081 8080/"
+    # Ann is the source
+    if (receivedDataList[0] == annID):
+        path = "8086 8081 8080/"
+    else:
+        path = "8086 8089 9090 8083 8085/"
+
     var = input("Chan's message: ")
-        #print("You entered " + str(var))
     message = str(var)
-    data = path + message
+
+    receivedDataList[2] = path + message
     # Send data with message and path
-    clientSocket.send(data.encode())
+    receivedDataList = pickle.dumps(receivedDataList)      # convert rawData in string format and store into data
+    clientSocket.send(receivedDataList)
     print("Jan:", message)
     print("Message sent.")
-    time.sleep(1)
 
 #clientSocket.close()  # close the socket since we are done using it

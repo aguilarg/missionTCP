@@ -2,7 +2,7 @@
 from socket import *   # used for socket configurations 
 import sys             # used to get arguments on command line 
 import time
-    
+
 # connect to port with incomming messages 
 port = 8088              # this router, F, gets connected to port 8084 as a client        
 serverName = "localhost"

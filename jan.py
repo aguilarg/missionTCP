@@ -2,6 +2,7 @@
 from socket import *   # used for socket configurations 
 import sys             # used to get arguments on command line 
 import time
+import pickle
     
 janToAnn = []
 janToChan = []
@@ -23,27 +24,45 @@ print("sucessfully connected. Ready to send message on port " + str(port) + "...
 
 def getPathAndMessage(data):
     # extract path from data
-    data = data.decode()               # decode message because the data is coming as a bytes            
+    #data = data.decode()               # decode message because the data is coming as a bytes            
     data = data.split('/')
     path = data[0]
     message = data[1]
     
     return (path, message)
 
+annID = 111
+chanID = 1
+destination = [annID, chanID]
+
+DRP = 0
+TER = 0
+URG = 0
+ACK = 0
+RST = 0
+SYN = 0
+FIN = 0
+flags = [DRP, TER, URG, ACK, RST, SYN, FIN]
+
 connectedFlag = False       # use to check is server is already in use
 done = False
 first_time = True
 while True:
-    # receive message from sender
-    data = clientSocket.recv(1024) 
-    path, message = getPathAndMessage(data)
-    time.sleep(1)   # wait 1 second the print message
+    #**************************************************
+    receivedData = clientSocket.recv(1024) # recieve message from sender
+    receivedDataList = pickle.loads(receivedData)  # convert data in list format: [destination[0], pathMessage, flags]
+    path, message = getPathAndMessage(receivedDataList[2]) # sends data for processing
+    time.sleep(1)
+    print ("Destination: ", receivedDataList[0])
     print("\nMessage received.")
     print("Ann:", message)
     print("")
+    #displayDataFlags(receivedDataList[2])
+    #*************************************************
     
-    
-    if(message == "execute"):
+    if(message == "Execute"):
+        time.sleep(1)
+        print("Notifying airforce base to execute mission...")
         # connect to airforceH
         if (connectedFlag != True):
             #prepare server socket
@@ -55,17 +74,8 @@ while True:
             connectedFlag = True
 
         while(connectedFlag):
-            if (message == "mission successful"):
-                close = "close"
-                
-                connectionSocket.send(close.encode())
-                message = "mission has been accomplished!!!!"
-                done = True
-                break
-
             if(first_time):
                 # send data to next client/server
-                print("message sent on port", port, "from Jan")
                 #message = message.decode()
                 connectionSocket.send(message.encode())
                 print("Jan:", message)
@@ -74,9 +84,18 @@ while True:
 
             message = connectionSocket.recv(1024)      # new incoming message (server end)
             message = message.decode()
+            time.sleep(1)
             print("\nMessage received.")
             print("AirforceH:", message)
             print("")
+
+            if (message == "mission successful"):
+                close = "close"
+                
+                connectionSocket.send(close.encode())
+                message = "CONGRATULATIONS WE FRIED DRY GREEN LEAVES"
+                done = True
+                break
 
             var = input("Jan's message: ")
             message = str(var)
@@ -96,11 +115,12 @@ while True:
         message = str(var)
      
 
-    data = path + message
+    receivedDataList[2] = path + message
+    
     # Send data with message and path
-    clientSocket.send(data.encode())
+    receivedDataList = pickle.dumps(receivedDataList)   # convert data to string
+    clientSocket.send(receivedDataList)
     print("Jan:", message)
     print("Message sent.")
-    time.sleep(1)
 
 #clientSocket.close()  # close the socket since we are done using it

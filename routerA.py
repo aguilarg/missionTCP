@@ -1,7 +1,7 @@
 from socket import *   # used for socket configurations 
 import sys              # used to get arguments on command line
 import time             # used to find current time
-
+import pickle
 import numpy as np
 import networkx as nx
 import numpy as np
@@ -43,7 +43,7 @@ clientSocket.connect((serverName, port))        # connects the client and the se
 
 # extract path from data
 def getPathAndMessage(data):
-    data = data.decode()               # decode message because the data is coming as a bytes            
+    #data = data.decode()               # decode message because the data is coming as a bytes            
     data = data.split('/')
     path = data[0]
     message = data[1]
@@ -65,42 +65,65 @@ def getNextData(path, message):
 
     return data, port
 
+# display bits as data is sent
+def displayDataFlags(flags):
+    print("DRP = ", flags[0])
+    print("TER = ", flags[1])
+    print("URG = ", flags[2])
+    print("ACK = ", flags[3])
+    print("RST = ", flags[4])
+    print("SYN = ", flags[5])
+    print("FIN = ", flags[6])
+
 # sends and receive data
-def sendRecv(connectionSocket, data, port):
+def sendRecv(connectionSocket, dataList, port):
     # send data to next client/server
-    print("message sent on port", port, "from Router A")
-    connectionSocket.send(data.encode())
-    time.sleep(2)
+    sendData = pickle.dumps(dataList)      # convert rawData in string format and store into data
+    connectionSocket.send(sendData)
 
     # recieve data and send it to next port
-    data = connectionSocket.recv(1024)      # new incoming message (server end)
-    path, message = getPathAndMessage(data) # send data for processing to get path and message
-    print("path = ", path)
-    print("message = ", message)  
-
-    # since we got the data using the server, we send it using the client
-    data, port = getNextData(path, message)       # get next path for which the message should go
-    print("message sent on port", port, "from Router A") 
-    clientSocket.send(data.encode())
-    time.sleep(2)
-
-# send and receive data
-connectedFlagAnn = False       # use to check is server is already in use
-connectedFlagJan = False       # use to check is server is already in use
-while 1:
-    data = clientSocket.recv(1024)      # recieve message from sender
-    print("Router A: Message received from Ann.")
-
-    path, message = getPathAndMessage(data)
+    #**************************************************
+    dataList = connectionSocket.recv(1024) # recieve message from sender
+    dataList = pickle.loads(dataList)  # convert data in list format: [destination[0], pathMessage, flags]
+    path, message = getPathAndMessage(dataList[2]) # sends data for processing
+    time.sleep(1)
+    print ("Source: ", dataList[0])
+    print ("Destination: ", dataList[1])
     print("path = ", path)
     print("message = ", message)
+    #displayDataFlags(dataList[2])
+    #************************************************* 
 
-    data, port = getNextData(path, message)       # get next path for which the message should go
+    # since we got the data using the server, we send it using the client
+    dataList[2], port = getNextData(path, message)       # get next path for which the message should go
+    dataList = pickle.dumps(dataList) 
+    clientSocket.send(dataList)
+
+# send and receive data
+connectedFlagChan = False       # use to check is server is already in use
+connectedFlagJan = False        # use to check is server is already in use
+while 1:
+    #**************************************************
+    receivedData = clientSocket.recv(1024) # recieve message from sender
+    receivedDataList = pickle.loads(receivedData)  # convert data in list format: [destination[0], pathMessage, flags]
+    path, message = getPathAndMessage(receivedDataList[2]) # sends data for processing
+    time.sleep(1)
+    print ("Source: ", receivedDataList[0])
+    print ("Destination: ", receivedDataList[1])
+    print("path = ", path)
+    print("message = ", message)
+    #displayDataFlags(receivedDataList[2])
+    #*************************************************
+    
+    #sendData = pickle.dumps(receivedDataList)      # convert rawData in string format and store into data
+    #clientSocket.send(sendData)
+
+
+    receivedDataList[2], port = getNextData(path, message)       # get next path for which the message should go
 
 
     if (connectedFlagJan != True and port == 8081):
         #prepare server socket
-        print("In Jan connection")
         janServerSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
         janServerSocket.bind((serverName, port))  # bind the socket to the local address
         janServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -108,20 +131,20 @@ while 1:
         janConnectionSocket, addr = janServerSocket.accept()
         connectedFlagJan = True
 
-    if (connectedFlagAnn != True and port == 8086):
+    if (connectedFlagChan != True and port == 8086):
         #prepare server socket
-        #print("In Jan connection")
         chanServerSocket = socket(AF_INET,SOCK_STREAM)  # AF_INET = IPv4, SOCK_STREAM = TCP socket
         chanServerSocket.bind((serverName, port))  # bind the socket to the local address
         chanServerSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         chanServerSocket.listen(5)
         chanConnectionSocket, addr = chanServerSocket.accept()
-        connectedFlagAnn = True
+        connectedFlagChan = True
 
-    # send message to Jan
+    # send receivedDataList to Jan
     if(port == 8081):
-        sendRecv(janConnectionSocket, data, port)
+        sendRecv(janConnectionSocket, receivedDataList, port)
 
     # send message to Chan
     if(port == 8086):
-        sendRecv(chanConnectionSocket, data, port) 
+        sendRecv(chanConnectionSocket, receivedDataList, port) 
+    

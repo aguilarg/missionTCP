@@ -172,8 +172,8 @@ def sendRecv(connectionSocket, dataList, port):
     dataList = pickle.loads(dataList)  # convert data in list format: [destination[0], pathMessage, flags]
     path, message = getPathAndMessage(dataList[2]) # sends data for processing
     time.sleep(1)
-    print ("Source: ", receivedDataList[0])
-    print ("Destination: ", receivedDataList[1])
+    print ("Source: ", dataList[0])
+    print ("Destination: ", dataList[1])
     print("path = ", path)
     print("message = ", message)
     #displayDataFlags(dataList[2])

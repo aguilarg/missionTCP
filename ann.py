@@ -57,11 +57,14 @@ ACK = 0
 RST = 0
 SYN = 0
 FIN = 0
-flags = [DRP, TER, URG, ACK, RST, SYN, FIN]
+check_num = 0
+seq_num = 0
+flags = [DRP, TER, URG, ACK, RST, SYN, FIN, check_num, seq_num]
 
 while True:
     try:
         choice = input("Press 0 for Jan or 1 for Chan: ")
+        print("")
         choice = int(choice)
 
         var = input("Ann's message: ")
@@ -71,21 +74,33 @@ while True:
         if(choice):
             path = "8086 8087/"   
             pathMessage = path + message
-            sendDataList = [source[0], destination[1], pathMessage, flags]
+            sendDataList = [source[0], destination[2], pathMessage, flags]
         # go to Jan path 
         else:
             path = "8081 8082 8083 8085/"
             pathMessage = path + message
             destination[1] = janID
-            sendDataList = [source[0], destination[0], pathMessage, flags]
+            sendDataList = [source[0], destination[1], pathMessage, flags]
         
         print("path = ", path)
+        print("")
+        
+        print("DRP:",DRP)
+        print("TER:",TER)
+        print("URG:",URG)
+        print("ACK:",ACK)
+        print("RST:",RST)
+        print("SYN:",SYN)
+        print("FIN:",FIN)
+        print("Check number:", check_num)
+        print("Sequence number:", seq_num)
+        print("")
                   
         #**************************************************
         # data to be sent
         sendData = pickle.dumps(sendDataList)      # convert rawData in string format and store into data
         connectionSocket.send(sendData)
-        print("Ann:", message)
+        print("Data:", message)
         print("Message sent.")
         #**************************************************
 

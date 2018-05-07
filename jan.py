@@ -30,7 +30,7 @@ def getPathAndMessage(data):
     message = data[1]
     
     return (path, message)
-
+janID = 100
 annID = 111
 chanID = 1
 destination = [annID, chanID]
@@ -42,7 +42,8 @@ ACK = 0
 RST = 0
 SYN = 0
 FIN = 0
-flags = [DRP, TER, URG, ACK, RST, SYN, FIN]
+check_sum = 0
+flags = [DRP, TER, URG, ACK, RST, SYN, FIN, check_sum]
 
 connectedFlag = False       # use to check is server is already in use
 done = False
@@ -57,7 +58,17 @@ while True:
     print("\nMessage received.")
     print("Ann:", message)
     print("")
-    #displayDataFlags(receivedDataList[2])
+    DataFlags = receivedDataList[3]
+    
+    print("DRP:",DataFlags[0])
+    print("TER:",DataFlags[1])
+    print("URG:",DataFlags[2])
+    print("ACK:",DataFlags[3])
+    print("RST:",DataFlags[4])
+    print("SYN:",DataFlags[5])
+    print("FIN:",DataFlags[6])
+    print("Check number:", DataFlags[7])
+                  
     #*************************************************
     
     if(message == "Execute"):

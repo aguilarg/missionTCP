@@ -54,14 +54,34 @@ while True:
     print("")
     #displayDataFlags(receivedDataList[2])
     #*************************************************
+    DataFlags = receivedDataList[3]
     
-    receivedDataList[0] = chanID   # set source agentID
+    print("")
+    
+    print("DRP:",DataFlags[0])
+    print("TER:",DataFlags[1])
+    print("URG:",DataFlags[2])
+    print("ACK:",DataFlags[3])
+    print("RST:",DataFlags[4])
+    print("SYN:",DataFlags[5])
+    print("FIN:",DataFlags[6])
+    print("Check number:", DataFlags[7])
+                  
+    
+    
 
     # Ann is the source
     if (receivedDataList[0] == annID):
+        receivedDataList[1] = annID
+        print("in if s tatement", receivedDataList[1])
+ 
         path = "8086 8081 8080/"
     else:
+        receivedDataList[1] = janID
         path = "8086 8089 9090 8083 8085/"
+    print("CHAN is DES")
+    receivedDataList[0] = chanID   # set source agentID
+    print(receivedDataList[0])
 
     var = input("Chan's message: ")
     message = str(var)
@@ -70,7 +90,8 @@ while True:
     # Send data with message and path
     receivedDataList = pickle.dumps(receivedDataList)      # convert rawData in string format and store into data
     clientSocket.send(receivedDataList)
-    print("Jan:", message)
+    print("")
+    print("Data:", message)
     print("Message sent.")
 
 #clientSocket.close()  # close the socket since we are done using it

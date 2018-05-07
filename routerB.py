@@ -30,6 +30,7 @@ def dijAlg(route, node):
             result.append(route[num])    
         print(route[i],"               ", total, "             ", result)
         total = 0
+    
        
 routers = ['A','B','C','D','E','F','G','L']
 

@@ -26,9 +26,7 @@ def displayDataFlags(flags):
     print("Checksum:", flags[7])
     print("Sequence number:", flags[8])
     
-def getPathAndMessage(data):
-    # extract path from data
-    #data = data.decode()               # decode message because the data is coming as a bytes            
+def getPathAndMessage(data):           
     data = data.split('/')
     path = data[0]
     message = data[1]
@@ -56,21 +54,58 @@ firstChan = True
 firstJan = True 
 firstChanVisited = False
 firstJanVisited = False
-TermChan = 3
+TermChan = 5
 
 annToChanLog = open("AnnToChanLog.txt","w") 
 annToJanLog = open("AnnToJanLog.txt","w") 
 
+pendingExit = False
+chanClose = True
 while True:
-    
-    if(TermChan == 1):
-        flags[2] = 1
-        "Terminate Chan!!"
     try:
-        choice = input("Press 0 for Jan or 1 for Chan: ")
-        print("")
-        choice = int(choice)
+        if(TermChan == 1 and pendingExit == False):
+            flags[2] = 1
+            print("Notifying Jan something is fishy..." )
+            time.sleep(2)
+            choice = 0
+            pendingExit = True
+            chanClose = False    
 
+        elif(TermChan == 1 and pendingExit == True):
+            flags[2] = 0      #URG
+            flags[4] = 1      #RST - Download communication
+            flags[1] = 1      #TER - Terminate client (Chan)
+            choice = 1
+            chanClose = False
+
+        elif(TermChan == 0):
+            print("Downloading Chan transcript and terminating connection...")
+            time.sleep(3)
+            print("Download and termination complete\n")
+            time.sleep(1)
+            TermChan = -1
+            flags[4] = 0      #RST - reset
+            flags[1] = 0      #TER - reset
+            flags[2] = 0      #SYN - reset
+            chanClose = True
+        
+        if(chanClose):
+            # error check
+            while True:
+                choice = input("Press 0 for Jan or 1 for Chan: ")
+                try:
+                    choice = int(choice) 
+                except ValueError:
+                    print(end = "")
+                if (choice == 1):
+                    choice = 1
+                    break
+                elif (choice == 0):
+                    choice = 0
+                    break
+                elif(choice != 1 or choice != 0):
+                    print("Sorry,", choice, "is not accepted. Try again.\n")
+        print("")
         if(choice):
             if(firstChan):
                 print("Establishing 3 handshake...")
@@ -78,9 +113,15 @@ while True:
                 flags[5] = 1
                 message = "No data"
             else:
-                var = input("Ann's message: ")
-                message = str(var)
-                flags[5] = 0
+                if(TermChan != 0 and TermChan != 1):
+                    var = input("Ann's message: ")
+                    message = str(var)
+                    flags[5] = 0
+            
+            # send Chan last message
+            if(pendingExit == True):
+                message = "You've been compromise. I have to close your connection"
+                pendingExit = False
                 
             path = "8086 8087/"   
             pathMessage = path + message
@@ -94,17 +135,28 @@ while True:
                 flags[5] = 1
                 message = "No Data"
             else:
-                var = input("Ann's message: ")
-                message = str(var)
-                flags[5] = 0
+                if(chanClose):
+                    var = input("Ann's message: ")
+                    message = str(var)
+                    flags[5] = 0
             path = "8081 8082 8083 8085/"
             flags[8] = len(message)
+
+            # notify Jan with message
+            if(TermChan == 1):
+                message = "Chan has been compromise!"
+            """
+            if(TermChan == 0):
+                TermChan = -1
+                flags[4] = 0      #RST - reset
+                flags[1] = 0      #TER - reset
+                flags[2] = 0      #SYN - reset
+            """
             pathMessage = path + message
             destination[1] = janID
             sendDataList = [source[0], destination[1], pathMessage, flags]
-
         print("")
-                  
+
         #**************************************************
         # data to be sent
         sendData = pickle.dumps(sendDataList)      # convert rawData in string format and store into data
@@ -147,20 +199,22 @@ while True:
             firstChan = False
             firstChanVisited = False
             displayDataFlags(flags)
-            print("Handshake has been completed with Chan...")
-            
-        else:
+            print("Handshake has been completed with Chan...\n")
+
+        elif(receivedDataList[0] == chanID):
             print("Chan:", message)
             TermChan -=1
             displayDataFlags(flags)
             flags[2] = seq_num1[2]
+
         if (firstJanVisited):
             firstJan = False
             displayDataFlags(flags)
             flags[8] = 328
             firstJanVisited = False
-            print("Handshake has been completed with Jan...")
-        elif (firstJanVisited != True):
+            print("Handshake has been completed with Jan...\n")
+        
+        if (firstJanVisited != True and receivedDataList[0] == janID):
             print("Jan:", message)
             displayDataFlags(flags)
 

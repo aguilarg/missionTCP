@@ -122,7 +122,7 @@ while True:
     receivedDataList = pickle.dumps(receivedDataList)      # convert rawData in string format and store into data
     clientSocket.send(receivedDataList)
     
-    if (DataFlags[2] == 1):
+    if (DataFlags[1] == 1):
         print("Terminating...")
         clientSocket.close()
         sys.exit()

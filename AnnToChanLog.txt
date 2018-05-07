@@ -1,0 +1,12 @@
+Ann: No data
+Chan: No data
+Ann: klfdj
+Chan: ;lkdf
+Ann: lksdjf
+Chan: l;sdjmf
+Ann: l;sdkfm
+Chan: okljdsmf
+Ann: ;lkfd
+Chan: klfd;g
+Ann: You've been compromise. I have to close your connection
+Chan: Okay

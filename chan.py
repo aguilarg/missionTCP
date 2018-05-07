@@ -12,6 +12,7 @@ import sys             # used to get arguments on command line
 import time
 import pickle
 
+AnnVisited = False
 janToAnn = []
 janToChan = []
 
@@ -43,6 +44,8 @@ janID = 100
 chanID = 1
 
 while True:
+    
+    
     # receive message from sender
     #**************************************************
     receivedData = clientSocket.recv(1024) # recieve message from sender
@@ -52,9 +55,11 @@ while True:
     print("\nMessage received.")
     print("Ann:", message)
     print("")
+    DataFlags = receivedDataList[3]
+    
     #displayDataFlags(receivedDataList[2])
     #*************************************************
-    DataFlags = receivedDataList[3]
+ 
     
     print("")
     
@@ -66,6 +71,7 @@ while True:
     print("SYN:",DataFlags[5])
     print("FIN:",DataFlags[6])
     print("Check number:", DataFlags[7])
+    print("Sequence number:", DataFlags[8])
                   
     
     
@@ -73,23 +79,28 @@ while True:
     # Ann is the source
     if (receivedDataList[0] == annID):
         receivedDataList[1] = annID
-        print("in if s tatement", receivedDataList[1])
- 
         path = "8086 8081 8080/"
     else:
         receivedDataList[1] = janID
         path = "8086 8089 9090 8083 8085/"
-    print("CHAN is DES")
     receivedDataList[0] = chanID   # set source agentID
-    print(receivedDataList[0])
 
-    var = input("Chan's message: ")
-    message = str(var)
-
+    if(AnnVisited):
+        message = "No data"
+        AnnVisited = False
+    else:
+        var = input("Chan's message: ")
+        message = str(var)
+    
+    
     receivedDataList[2] = path + message
     # Send data with message and path
     receivedDataList = pickle.dumps(receivedDataList)      # convert rawData in string format and store into data
     clientSocket.send(receivedDataList)
+    if (DataFlags[2] == 1):
+        print("Terminating...")
+        SclientSocket.close()
+        sys.exit()
     print("")
     print("Data:", message)
     print("Message sent.")

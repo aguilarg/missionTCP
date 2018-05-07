@@ -68,6 +68,7 @@ while True:
     print("SYN:",DataFlags[5])
     print("FIN:",DataFlags[6])
     print("Check number:", DataFlags[7])
+    print("Sequence number:", DataFlags[8])
                   
     #*************************************************
     

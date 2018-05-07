@@ -4,7 +4,28 @@ import sys             # used to get arguments on command line
 import time
 import pickle
 
+DRP = 0
+TER = 0
+URG = 0
+ACK = 0
+RST = 0
+SYN = 0
+FIN = 0
+check_num = 0
+seq_num = 0
+flags = [DRP, TER, URG, ACK, RST, SYN, FIN, check_num, seq_num]
 
+def displayDataFlags(flags):
+    print("DRP = ", flags[0])
+    print("TER = ", flags[1])
+    print("URG = ", flags[2])
+    print("ACK = ", flags[3])
+    print("RST = ", flags[4])
+    print("SYN = ", flags[5])
+    print("FIN = ", flags[6])
+    print("Check number:", flags[7])
+    print("Sequence number:", flags[8])
+    
 def getPathAndMessage(data):
     # extract path from data
     #data = data.decode()               # decode message because the data is coming as a bytes            
@@ -13,24 +34,6 @@ def getPathAndMessage(data):
     message = data[1]
     
     return (path, message)
-
-
-    
-annToChan = [] 
-
-
-annToJan = []
-
-for i in range(9):
-    annToJan.append("g")
-fp = open('Ann-_Chan.txt') 
-annToChan = fp.read().split("\n") 
-fp.close() 
-fp = open('Ann-_Jan.txt') 
-annToJan = fp.read().split("\n") 
-fp.close() 
-
-
 
 # Prepare a sever socket
 serverPort = 8080
@@ -49,51 +52,53 @@ chanID = 1
 annID = 111
 destination = [annID, janID, chanID]
 source = [annID, janID, chanID]
-
-DRP = 0
-TER = 0
-URG = 0
-ACK = 0
-RST = 0
-SYN = 0
-FIN = 0
-check_num = 0
-seq_num = 0
-flags = [DRP, TER, URG, ACK, RST, SYN, FIN, check_num, seq_num]
-
+firstChan = True
+firstJan = True 
+firstChanVisited = False
+firstJanVisited = False
+TermChan = 3
 while True:
+    
+    if(TermChan == 1):
+        flags[2] = 1
+        "Terminate Chan!!"
     try:
         choice = input("Press 0 for Jan or 1 for Chan: ")
         print("")
         choice = int(choice)
 
-        var = input("Ann's message: ")
-        message = str(var)
-        
-        # go to the path for chan
         if(choice):
+            if(firstChan):
+                print("Establishing 3 handshake...")
+                firstChanVisited = True
+                flags[5] = 1
+                message = "No data"
+            else:
+                var = input("Ann's message: ")
+                message = str(var)
+                flags[5] = 0
+                
             path = "8086 8087/"   
             pathMessage = path + message
+            flags[8] = len(message)
             sendDataList = [source[0], destination[2], pathMessage, flags]
         # go to Jan path 
         else:
+            if(firstJan):
+                print("Establishing 3 handshake...")
+                firstJanVisited = True
+                flags[5] = 1
+                message = "No Data"
+            else:
+                var = input("Ann's message: ")
+                message = str(var)
+                flags[5] = 0
             path = "8081 8082 8083 8085/"
+            flags[8] = len(message)
             pathMessage = path + message
             destination[1] = janID
             sendDataList = [source[0], destination[1], pathMessage, flags]
-        
-        print("path = ", path)
-        print("")
-        
-        print("DRP:",DRP)
-        print("TER:",TER)
-        print("URG:",URG)
-        print("ACK:",ACK)
-        print("RST:",RST)
-        print("SYN:",SYN)
-        print("FIN:",FIN)
-        print("Check number:", check_num)
-        print("Sequence number:", seq_num)
+
         print("")
                   
         #**************************************************
@@ -103,18 +108,35 @@ while True:
         print("Data:", message)
         print("Message sent.")
         #**************************************************
-
-
-        #**************************************************
         # receive message from sender
         receivedData =  connectionSocket.recv(1024) # recieve message from sender
         receivedDataList = pickle.loads(receivedData)  # convert data in list format: [destination[0], pathMessage, flags]
+        seq_num1 = receivedDataList[3]
+        flags[8] += seq_num1[8]
         path, message = getPathAndMessage(receivedDataList[2]) # sends data for processing
         time.sleep(1)
         print("\nMessage received.")
-        print("Jan:", message)
-        #*************************************************
-        
+        if(firstChanVisited):
+            firstChan = False
+            firstChanVisited = False
+            displayDataFlags(flags)
+            print("Handshake has been completed with Chan...")
+            
+        else:
+            print("Chan:", message)
+            TermChan -=1
+            displayDataFlags(flags)
+            flags[2] = seq_num1[2]
+        if (firstJanVisited):
+            firstJan = False
+            displayDataFlags(flags)
+            flags[8] = 328
+            firstJanVisited = False
+            print("Handshake has been completed with Jan...")
+        elif (firstJanVisited != True):
+            print("Jan:", message)
+            displayDataFlags(flags)
+      
     except IOError:
         # Send response message for file not found
         connectionSocket.send(b"Error found")  

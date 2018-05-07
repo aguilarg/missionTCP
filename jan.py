@@ -28,8 +28,21 @@ def getPathAndMessage(data):
     data = data.split('/')
     path = data[0]
     message = data[1]
-    
+
     return (path, message)
+
+def displayDataFlags(flags):
+    print("DRP = ", flags[0])
+    print("TER = ", flags[1])
+    print("URG = ", flags[2])
+    print("ACK = ", flags[3])
+    print("RST = ", flags[4])
+    print("SYN = ", flags[5])
+    print("FIN = ", flags[6])
+    print("Checksum:", flags[7])
+    print("Sequence number:", flags[8])
+    
+    
 janID = 100
 annID = 111
 chanID = 1
@@ -48,6 +61,12 @@ flags = [DRP, TER, URG, ACK, RST, SYN, FIN, check_sum]
 connectedFlag = False       # use to check is server is already in use
 done = False
 first_time = True
+firstHandshake = False
+
+janToAnnLog = open("JanToAnnLog.txt","w") 
+janToChanLog = open("JanToChanLog.txt","w")
+janToAirforceH = open("JanToAirforceLog.txt","w") 
+
 while True:
     #**************************************************
     receivedData = clientSocket.recv(1024) # recieve message from sender
@@ -58,17 +77,26 @@ while True:
     print("\nMessage received.")
     print("Ann:", message)
     print("")
-    DataFlags = receivedDataList[3]
     
-    print("DRP:",DataFlags[0])
-    print("TER:",DataFlags[1])
-    print("URG:",DataFlags[2])
-    print("ACK:",DataFlags[3])
-    print("RST:",DataFlags[4])
-    print("SYN:",DataFlags[5])
-    print("FIN:",DataFlags[6])
-    print("Check number:", DataFlags[7])
-    print("Sequence number:", DataFlags[8])
+    # saving the communication log for Ann and Jan
+    if (receivedDataList[0] == annID):
+        receivedDataList[0] = janID   # set source for packets
+        receivedDataList[1] = annID   # set destination for packets
+        janToAnnLog = open("JanToAnnLog.txt","a")
+        print("Received: Writing to Jan-Ann log file")
+        janToAnnLog.write("Ann: " + message + '\n')
+        janToAnnLog.close()
+
+    if(receivedDataList[0] == chanID):
+        receivedDataList[0] = janID   # set source for packets
+        receivedDataList[1] = chanID
+        janToChanLog = open("JanToChanLog.txt","a")
+        print("Received: Writing to Jan-Chan log file")
+        janToChanLog.write("Chan: " + message + '\n')
+        janToChanLog.close()
+
+    DataFlags = receivedDataList[3]
+    displayDataFlags(DataFlags)
                   
     #*************************************************
     
@@ -92,6 +120,13 @@ while True:
                 connectionSocket.send(message.encode())
                 print("Jan:", message)
                 print("Message sent.")
+
+                # log communication
+                janToAirforceH = open("JanToAirforceLog.txt","a")
+                print("Sent: Writing to Jan-Airforce log file")
+                janToAirforceH.write("Jan: " + message + '\n')
+                janToAirforceH.close()
+
                 first_time = False
 
             message = connectionSocket.recv(1024)      # new incoming message (server end)
@@ -103,31 +138,65 @@ while True:
 
             if (message == "mission successful"):
                 close = "close"
-                
                 connectionSocket.send(close.encode())
-                message = "CONGRATULATIONS WE FRIED DRY GREEN LEAVES"
+                #message = "CONGRATULATIONS WE FRIED DRY GREEN LEAVES"
                 done = True
+                
+                # log communication
+                janToAirforceH = open("JanToAirforceLog.txt","a")
+                print("Received: Writing to Jan-Airforce log file")
+                janToAirforceH.write("AirforceH: " + message + '\n')
+                janToAirforceH.close()
                 break
+
+            # log communication
+            janToAirforceH = open("JanToAirforceLog.txt","a")
+            print("Received: Writing to Jan-Airforce log file")
+            janToAirforceH.write("AirforceH: " + message + '\n')
+            janToAirforceH.close()
 
             var = input("Jan's message: ")
             message = str(var)
             #message = message.decode()
+            
+            # log communication
+            janToAirforceH = open("JanToAirforceLog.txt","a")
+            print("Sent: Writing to Jan-Airforce log file")
+            janToAirforceH.write("Jan: " + message + '\n')
+            janToAirforceH.close()
+
             connectionSocket.send(message.encode())
             print("Jan:", message)
             print("Message sent.")
-
-
             # recieve data and send it to next port
             
 
     path = "8083 8082 8081 8080/"
 
-    if(done != True):
+    if(done != True and firstHandshake):
         var = input("Jan's message: ")
         message = str(var)
-     
+    elif (firstHandshake != True):
+        message = "No data"
+        firstHandshake = True
+    else:
+        # mission has been completed
+        message = "CONGRATULATIONS WE FRIED DRY GREEN LEAVES"
+        done = False
 
     receivedDataList[2] = path + message
+
+    if (receivedDataList[1] == annID):
+        print("Sent: Writing to Jan-Ann log file")
+        janToAnnLog = open("JanToAnnLog.txt","a") 
+        janToAnnLog.write("Jan: " + message + "\n")
+        janToAnnLog.close()
+    
+    if (receivedDataList[1] == chanID):
+        janToChanLog = open("JanToChanLog.txt","a")
+        print("Sent: Writing to Jan-Chan log file")
+        janToChanLog.write("Jan: " + message + '\n')
+        janToChanLog.close()
     
     # Send data with message and path
     receivedDataList = pickle.dumps(receivedDataList)   # convert data to string

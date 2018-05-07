@@ -118,3 +118,4 @@ while 1:
     receivedDataList[2], port = getNextData(path, message)       # get next path for which the message should go
     receivedDataList = pickle.dumps(receivedDataList)
     clientSocket.send(receivedDataList) 
+    

@@ -23,7 +23,7 @@ def displayDataFlags(flags):
     print("RST = ", flags[4])
     print("SYN = ", flags[5])
     print("FIN = ", flags[6])
-    print("Check number:", flags[7])
+    print("Checksum:", flags[7])
     print("Sequence number:", flags[8])
     
 def getPathAndMessage(data):
@@ -57,6 +57,10 @@ firstJan = True
 firstChanVisited = False
 firstJanVisited = False
 TermChan = 3
+
+annToChanLog = open("AnnToChanLog.txt","w") 
+annToJanLog = open("AnnToJanLog.txt","w") 
+
 while True:
     
     if(TermChan == 1):
@@ -107,6 +111,17 @@ while True:
         connectionSocket.send(sendData)
         print("Data:", message)
         print("Message sent.")
+        if (sendDataList[1] == chanID):
+            print("Sent: Writing to chan file")
+            annToChanLog = open("AnnToChanLog.txt","a") 
+            annToChanLog.write("Ann: " + message + "\n")
+            annToChanLog.close()
+
+        if(sendDataList[1] == janID):
+            print("Sent: Writing to Jan file")
+            annToJanLog = open("AnnToJanLog.txt","a")
+            annToJanLog.write("Ann: " + message + '\n')
+            annToJanLog.close()
         #**************************************************
         # receive message from sender
         receivedData =  connectionSocket.recv(1024) # recieve message from sender
@@ -116,6 +131,18 @@ while True:
         path, message = getPathAndMessage(receivedDataList[2]) # sends data for processing
         time.sleep(1)
         print("\nMessage received.")
+        if (receivedDataList[0] == chanID):
+            annToChanLog = open("AnnToChanLog.txt","a")
+            print("Received: Writing to Chan file")
+            annToChanLog.write("Chan: " + message + '\n')
+            annToChanLog.close()
+        
+        if(receivedDataList[0] == janID):
+            print("Received: Writing to Jan file")
+            annToJanLog = open("AnnToJanLog.txt","a")
+            annToJanLog.write("Jan:" + message + '\n')
+            annToJanLog.close()
+
         if(firstChanVisited):
             firstChan = False
             firstChanVisited = False
@@ -136,10 +163,9 @@ while True:
         elif (firstJanVisited != True):
             print("Jan:", message)
             displayDataFlags(flags)
-      
+
     except IOError:
         # Send response message for file not found
         connectionSocket.send(b"Error found")  
         # Close client socket
         connectionSocket.close()  
-

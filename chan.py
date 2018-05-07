@@ -12,7 +12,7 @@ import sys             # used to get arguments on command line
 import time
 import pickle
 
-AnnVisited = False
+AnnVisited = True
 janToAnn = []
 janToChan = []
 
@@ -43,9 +43,9 @@ annID = 111
 janID = 100
 chanID = 1
 
-while True:
-    
-    
+chanToAnnLog = open("ChanToAnnLog.txt","w") 
+chanToJanLog = open("ChanToJanLog.txt","w") 
+while True:    
     # receive message from sender
     #**************************************************
     receivedData = clientSocket.recv(1024) # recieve message from sender
@@ -55,12 +55,23 @@ while True:
     print("\nMessage received.")
     print("Ann:", message)
     print("")
+    # saving the communication log for Ann and Jan
+    if (receivedDataList[0] == annID):
+        chanToAnnLog = open("ChanToAnnLog.txt","a")
+        print("Received: Writing to Chan-Ann log file")
+        chanToAnnLog.write("Ann: " + message + '\n')
+        chanToAnnLog.close()
+    if(receivedDataList[0] == janID):
+        chanToJanLog = open("ChanToJanLog.txt","a")
+        print("Received: Writing to Chan-Jan log file")
+        chanToJanLog.write("Jan: " + message + '\n')
+        chanToJanLog.close()
+    
     DataFlags = receivedDataList[3]
     
     #displayDataFlags(receivedDataList[2])
     #*************************************************
- 
-    
+
     print("")
     
     print("DRP:",DataFlags[0])
@@ -70,11 +81,9 @@ while True:
     print("RST:",DataFlags[4])
     print("SYN:",DataFlags[5])
     print("FIN:",DataFlags[6])
-    print("Check number:", DataFlags[7])
+    print("Checksum:", DataFlags[7])
     print("Sequence number:", DataFlags[8])
                   
-    
-    
 
     # Ann is the source
     if (receivedDataList[0] == annID):
@@ -92,17 +101,37 @@ while True:
         var = input("Chan's message: ")
         message = str(var)
     
-    
     receivedDataList[2] = path + message
+
     # Send data with message and path
+    print("\nChan Source ",  receivedDataList[0])
+    print("Chan Destination ",  receivedDataList[1])
+    
+    if (receivedDataList[1] == annID):
+        print("Sent: Writing to Chan-Ann log file")
+        chanToAnnLog = open("ChanToAnnLog.txt","a") 
+        chanToAnnLog.write("Chan: " + message + "\n")
+        chanToAnnLog.close()
+    
+    if (receivedDataList[1] == janID):
+        chanToJanLog = open("ChanToJanLog.txt","a")
+        print("Sent: Writing to Chan-Jan log file")
+        chanToJanLog.write("Chan: " + message + '\n')
+        chanToJanLog.close()
+
     receivedDataList = pickle.dumps(receivedDataList)      # convert rawData in string format and store into data
     clientSocket.send(receivedDataList)
+    
     if (DataFlags[2] == 1):
         print("Terminating...")
-        SclientSocket.close()
+        clientSocket.close()
         sys.exit()
+
     print("")
     print("Data:", message)
     print("Message sent.")
+
+
+
 
 #clientSocket.close()  # close the socket since we are done using it

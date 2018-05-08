@@ -90,8 +90,8 @@ def sendRecv(connectionSocket, dataList, port):
     time.sleep(1)
     print ("Source: ", dataList[0])
     print ("Destination: ", dataList[1])
-    print("path = ", path)
-    print("message = ", message)
+    print("Message: ", message)
+    print("")
     #displayDataFlags(dataList[2])
     #************************************************* 
 
@@ -111,8 +111,8 @@ while 1:
     time.sleep(1)
     print ("Source: ", receivedDataList[0])
     print ("Destination: ", receivedDataList[1])
-    print("path = ", path)
-    print("message = ", message)
+    print("Message: ", message)
+    print("")
     #displayDataFlags(receivedDataList[2])
     #*************************************************
     
@@ -149,3 +149,8 @@ while 1:
     if(port == 8086):
         sendRecv(chanConnectionSocket, receivedDataList, port) 
     
+    if(receivedDataList[3][6] == 1):
+        print("Self Terminating...")
+        time.sleep(1)
+        clientSocket.close()
+        sys.exit()

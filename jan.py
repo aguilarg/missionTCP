@@ -77,7 +77,7 @@ while True:
     print("\nMessage received.")
     print("Ann:", message)
     print("")
-    
+        
     # saving the communication log for Ann and Jan
     if (receivedDataList[0] == annID):
         receivedDataList[0] = janID   # set source for packets
@@ -117,6 +117,9 @@ while True:
             if(first_time):
                 # send data to next client/server
                 #message = message.decode()
+                message = "32°43’ 22.77” N,97° 9’ 7.53” W"
+                print("Sending target location...")
+                time.sleep(2)
                 connectionSocket.send(message.encode())
                 print("Jan:", message)
                 print("Message sent.")
@@ -139,7 +142,7 @@ while True:
             if (message == "mission successful"):
                 close = "close"
                 connectionSocket.send(close.encode())
-                #message = "CONGRATULATIONS WE FRIED DRY GREEN LEAVES"
+                message = "CONGRATULATIONS WE FRIED DRY GREEN LEAVES"
                 done = True
                 
                 # log communication
@@ -173,7 +176,11 @@ while True:
 
     path = "8083 8082 8081 8080/"
 
-    if(done != True and firstHandshake):
+    if (message == "Target Location"):
+        receivedDataList[3][2] = 1
+        #flags[2] = 1 #set URG flag
+        message = "32°43’ 22.77” N,97° 9’ 7.53” W"
+    elif(done != True and firstHandshake):
         var = input("Jan's message: ")
         message = str(var)
     elif (firstHandshake != True):
@@ -198,10 +205,21 @@ while True:
         janToChanLog.write("Jan: " + message + '\n')
         janToChanLog.close()
     
+    """
+    if(receivedDataList[3][2] == 1):
+        receivedDataList[3][2] = 0  # Turn off URG
+    """
+    
     # Send data with message and path
+    tempDataList = receivedDataList
     receivedDataList = pickle.dumps(receivedDataList)   # convert data to string
     clientSocket.send(receivedDataList)
     print("Jan:", message)
     print("Message sent.")
 
-#clientSocket.close()  # close the socket since we are done using it
+    if (tempDataList[3][6] == 1):
+        print("Terminating session...")
+        time.sleep(1)
+        print("Terminated")
+        clientSocket.close()  # close the socket since we are done using it
+        sys.exit()

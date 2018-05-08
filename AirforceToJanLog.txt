@@ -1,2 +1,4 @@
-Jan: Execute
+Jan: 32°43’ 22.77” N,97° 9’ 7.53” W
+AirforceH: Target Located
+Jan: mission successful
 AirforceH: mission successful

@@ -54,13 +54,14 @@ firstChan = True
 firstJan = True 
 firstChanVisited = False
 firstJanVisited = False
-TermChan = 5
+TermChan = 6
 
 annToChanLog = open("AnnToChanLog.txt","w") 
 annToJanLog = open("AnnToJanLog.txt","w") 
 
 pendingExit = False
 chanClose = True
+FINsent = False
 while True:
     try:
         if(TermChan == 1 and pendingExit == False):
@@ -79,9 +80,9 @@ while True:
             chanClose = False
 
         elif(TermChan == 0):
-            print("Downloading Chan transcript and terminating connection...")
-            time.sleep(3)
-            print("Download and termination complete\n")
+            print("Downloading Chan transcript...")
+            time.sleep(2)
+            print("Download complete\n")
             time.sleep(1)
             TermChan = -1
             flags[4] = 0      #RST - reset
@@ -89,6 +90,11 @@ while True:
             flags[2] = 0      #SYN - reset
             chanClose = True
         
+        if(flags[6] == 1):
+            print("\nNotify Jan that FIN bit is set")
+            time.sleep(1)
+            FINsent = True
+
         if(chanClose):
             # error check
             while True:
@@ -120,7 +126,7 @@ while True:
             
             # send Chan last message
             if(pendingExit == True):
-                message = "You've been compromise. I have to close your connection"
+                message = "You've been compromise. I have to close your connection."
                 pendingExit = False
                 
             path = "8086 8087/"   
@@ -145,13 +151,7 @@ while True:
             # notify Jan with message
             if(TermChan == 1):
                 message = "Chan has been compromise!"
-            """
-            if(TermChan == 0):
-                TermChan = -1
-                flags[4] = 0      #RST - reset
-                flags[1] = 0      #TER - reset
-                flags[2] = 0      #SYN - reset
-            """
+
             pathMessage = path + message
             destination[1] = janID
             sendDataList = [source[0], destination[1], pathMessage, flags]
@@ -163,6 +163,13 @@ while True:
         connectionSocket.send(sendData)
         print("Data:", message)
         print("Message sent.")
+        
+        if(pendingExit == False):
+            flags[4] = 0     
+            flags[1] = 0    
+        if(chanClose == False):
+             flags[2] = 0
+
         if (sendDataList[1] == chanID):
             print("Sent: Writing to chan file")
             annToChanLog = open("AnnToChanLog.txt","a") 
@@ -198,25 +205,49 @@ while True:
         if(firstChanVisited):
             firstChan = False
             firstChanVisited = False
+            flags[3] = 1
             displayDataFlags(flags)
+            flags[3] = 0
             print("Handshake has been completed with Chan...\n")
+            print("")
 
         elif(receivedDataList[0] == chanID):
             print("Chan:", message)
             TermChan -=1
             displayDataFlags(flags)
+            print("")
             flags[2] = seq_num1[2]
-
+        
+        if (firstJanVisited != True and receivedDataList[0] == janID):
+            print("Jan:", message)
+            if(chanClose == False):
+                receivedDataList[3][2] = 0
+            displayDataFlags(receivedDataList[3])
+            print("")
+        
         if (firstJanVisited):
             firstJan = False
+            flags[3] = 1    # ACK
             displayDataFlags(flags)
+            flags[3] = 0
+            print("")
             flags[8] = 328
             firstJanVisited = False
             print("Handshake has been completed with Jan...\n")
         
-        if (firstJanVisited != True and receivedDataList[0] == janID):
-            print("Jan:", message)
+        if (message == "Roger. Send me the FIN to terminate session"):
+            flags[6] = 1  # set FIN bit 
+        
+        if(FINsent):
+            flags[3] = 1 # reset FIN to zero
             displayDataFlags(flags)
+            print("\nTerminating my connection")
+            time.sleep(1)
+            print("Temination completed")
+            time.sleep(1)
+            print("\nHeading out to the destination...\n")
+            connectionSocket.close()
+            sys.exit()
 
     except IOError:
         # Send response message for file not found

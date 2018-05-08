@@ -78,8 +78,8 @@ while 1:
     time.sleep(1)
     print ("Source: ", receivedDataList[0])
     print ("Destination: ", receivedDataList[1])
-    print("path = ", path)
-    print("message = ", message)
+    print("Message = ", message)
+    print("")
     #displayDataFlags(receivedDataList[2])
     #*************************************************
     receivedDataList[2], port = getNextData(path, message)       # get next path for which the message should go
@@ -105,16 +105,21 @@ while 1:
     time.sleep(1)
     print ("Source: ", receivedDataList[0])
     print ("Destination: ", receivedDataList[1])
-    print("path = ", path)
-    print("message = ", message)
+    print("Message = ", message)
+    print("")
     #displayDataFlags(receivedDataList[2])
     #*************************************************  
 
     # since we got the data using the server, we send it using the client
     receivedDataList[2], port = getNextData(path, message)       # get next path for which the message should go
+    tempDataList =  receivedDataList
     receivedDataList = pickle.dumps(receivedDataList)
     clientSocket.send(receivedDataList) 
 
-    
+    if(tempDataList[3][6] == 1):
+        print("Self Terminating...\n")
+        time.sleep(1)
+        clientSocket.close()
+        sys.exit()
 
 #clientSocket.close()  # close the socket since we are done using it

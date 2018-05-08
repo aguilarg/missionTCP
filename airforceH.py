@@ -2,6 +2,37 @@
 from socket import *   # used for socket configurations 
 import sys             # used to get arguments on command line 
 import time
+import pickle
+
+def getPathAndMessage(data):
+    # extract path from data
+    #data = data.decode()               # decode message because the data is coming as a bytes            
+    data = data.split('/')
+    path = data[0]
+    message = data[1]
+    return (path, message)
+
+def displayDataFlags(flags):
+    print("DRP = ", flags[0])
+    print("TER = ", flags[1])
+    print("URG = ", flags[2])
+    print("ACK = ", flags[3])
+    print("RST = ", flags[4])
+    print("SYN = ", flags[5])
+    print("FIN = ", flags[6])
+    print("Checksum:", flags[7])
+    print("Sequence number:", flags[8])
+
+DRP = 0
+TER = 0
+URG = 0
+ACK = 0
+RST = 0
+SYN = 0
+FIN = 0
+check_num = 0
+seq_num = 0
+flags = [DRP, TER, URG, ACK, RST, SYN, FIN, check_num, seq_num]
 
 # connect to port with incomming messages 
 port = 8088              # this router, F, gets connected to port 8084 as a client        
@@ -16,16 +47,25 @@ while True:
     # receive message from sender
     message = clientSocket.recv(1024) 
     message = message.decode()
+    
+    print("\nMessage received.")
+    print("Jan:", message)
+    print("")
+
+    if (message == "PEPPER THE PEPPER"):
+        flags[2] = 1
+        displayDataFlags(flags)
+        flags[2] = 0          # URG set to zero
+        message  = "mission successful"
+    else:
+        displayDataFlags(flags)
 
     # close connection if Jan sends that command
     if(message == "close"):
         clientSocket.close()
-        print("terminating...")
+        print("Terminating...")
+        time.sleep(1)
         sys.exit()
-
-    print("\nMessage received.")
-    print("Jan:", message)
-    print("")
     
     # log communication
     airforceToJan = open("AirforceToJanLog.txt","a")
@@ -33,10 +73,9 @@ while True:
     airforceToJan.write("Jan: " + message + '\n')
     airforceToJan.close()
     
-    var = input("H's message: ")
-    message = str(var)
-
-
+    if (message != "mission successful"):
+        var = input("H's message: ")
+        message = str(var)
 
     # Send data with message and path
     clientSocket.send(message.encode())
